@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+outputs/
+*.log
+
+# Real, company-named private submission deliverables - kept locally,
+# delivered directly to the employer, never pushed to the public repo.
+# Exact filenames only - the generic "Example Co." versions are
+# intentionally tracked and public.
+/Example Co. AI Build Plan (v3).docx
+/deck/Example Co. Strategy Deck.pptx
+/deck/loom_script.md

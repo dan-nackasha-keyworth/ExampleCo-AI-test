@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Build - Status</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; padding: 24px; font-size: 13px; line-height: 1.5; }
+  h1 { font-size: 20px; font-weight: 600; color: #f8fafc; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat { background: #1a1d2e; border: 1px solid #2d3149; border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 96px; flex: 1; }
+  .stat .sv { font-size: 18px; font-weight: 700; color: var(--col, #f8fafc); }
+  .stat .sl { font-size: 10px; color: #64748b; margin-top: 3px; }
+
+  .divider { margin: 26px 0 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #475569; display: flex; align-items: center; gap: 8px; }
+  .divider::after { content: ''; flex: 1; height: 1px; background: #2d3148; }
+
+  .pipeline { display: flex; flex-direction: column; gap: 10px; }
+  .card { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
+  .card:hover { border-color: #4a5080; }
+  .card-summary { padding: 14px 18px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer; }
+  .icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; background: var(--bg); color: var(--col); border: 1px solid var(--bdr); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .item-name { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+  .item-note { font-size: 12px; color: #94a3b8; flex: 1; min-width: 160px; }
+  .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; background: var(--bg); color: var(--col); border: 1px solid var(--bdr); }
+
+  .detail { display: none; border-top: 1px solid #2d3148; padding: 16px 20px; background: #171924; font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .detail.open { display: block; }
+  .detail strong { color: #cbd5e1; }
+
+  table.runs { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+  table.runs th { text-align: left; padding: 8px 10px; background: #1a1d2e; color: #64748b; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #2d3149; }
+  table.runs td { padding: 8px 10px; border-bottom: 1px solid #1e2130; color: #cbd5e1; vertical-align: top; }
+  table.runs td.num { color: #f8fafc; font-weight: 600; }
+  .held-out-note { margin-top: 10px; font-size: 12px; color: #fbbf24; background: rgba(251,191,36,0.08); border: 1px solid #7c2d12; border-radius: 8px; padding: 10px 14px; }
+</style>
+</head>
+<body>
+
+<h1>AI build - status</h1>
+<p class="subtitle">Dan Nackasha-Keyworth &middot; Head of Client Services submission &middot; updated 6 July 2026 &middot; submission and presentation both due Tue 7 July</p>
+
+<div class="stats">
+  <div class="stat" style="--col:#f87171"><div class="sv">1 day</div><div class="sl">to submission</div></div>
+  <div class="stat" style="--col:#f87171"><div class="sv">1 day</div><div class="sl">to presentation</div></div>
+  <div class="stat" style="--col:#fbbf24"><div class="sv">3/4</div><div class="sl">part 1 components</div></div>
+  <div class="stat" style="--col:#34d399"><div class="sv">9/9</div><div class="sl">part 2 build items</div></div>
+  <div class="stat" style="--col:#34d399"><div class="sv">94.0%</div><div class="sl">latest accuracy</div></div>
+  <div class="stat" style="--col:#60a5fa"><div class="sv">$1.03</div><div class="sl">latest run cost</div></div>
+  <div class="stat"><div class="sv">27</div><div class="sl">git commits</div></div>
+</div>
+
+<div class="divider">Part 1 - strategy submission (in progress)</div>
+<div class="pipeline">
+
+<div class="card" id="card-deck">
+  <div class="card-summary" onclick="toggle('deck')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Strategy deck (PowerPoint)</span>
+        <span class="item-note">4 slides, generated from deck/build_deck.py</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-deck">
+    All four required sections covered: 12-month operating model roadmap (Q1-Q4, build/change/remove); AI-first tooling landscape (brief's own template, completed with illustrative tooling); commercial impact against all three named proxy metrics, every number calculated from the brief's own proxy figures with assumptions explicitly labeled (the CSM expansion figure is grounded in this build's own measured 6% buried-signal rate); team/skills/adoption. The real, company-named version of this deck was delivered privately, not published in this repo - see <strong>deck/build_deck.py</strong> for the illustrative public version.
+  </div>
+</div>
+
+<div class="card" id="card-diagram">
+  <div class="card-summary" onclick="toggle('diagram')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Architecture diagram</span>
+        <span class="item-note">deck/architecture_diagram.png</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-diagram">
+    Light-themed, presentation-ready flow diagram styled for a non-technical operational audience: inbound message &rarr; classify+extract &rarr; score+route &rarr; draft, with a conditional agentic investigation branch &rarr; human review. Legend distinguishes fixed logic, fixed AI calls, the one conditional agentic call, and the always-required safety gate.
+  </div>
+</div>
+
+<div class="card" id="card-script">
+  <div class="card-summary" onclick="toggle('script')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Loom script</span>
+        <span class="item-note">Timed, ~5 min, word-counted (658 words)</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-script">
+    See <strong>deck/loom_script.md</strong>. Covers architecture, five curated real messages (baseline, entry-channel override, retention risk without the word "cancel", Team Lead Triage honest uncertainty, and a flagship message hitting sensitive-topic override + loop-in + the agentic investigation at once), prompts + rationale, the real false-positive bug caught and fixed, commercial tie-back, and an honest next-version limit (the Opus 4.8 negative result). Includes backup Q&amp;A talking points for a live demo.
+  </div>
+</div>
+
+<div class="card" id="card-loom">
+  <div class="card-summary" onclick="toggle('loom')">
+    <div class="icon" style="--col:#9ca3af;--bg:#1a1d2e;--bdr:#334155">4</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Loom recording</span>
+        <span class="item-note">5 minutes, screen + narration</span>
+        <div class="header-right"><span class="badge" style="--col:#9ca3af;--bg:rgba(107,114,128,0.15);--bdr:#334155">Not started</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-loom">
+    Script (item 3) is ready to record against - rehearse twice minimum before the final take, per the build plan's own testing note.
+  </div>
+</div>
+
+</div>
+
+<div class="divider">Part 2 - AI build (in active iteration)</div>
+<div class="pipeline">
+
+<div class="card" id="card-core">
+  <div class="card-summary" onclick="toggle('core')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Core pipeline</span>
+        <span class="item-note">Classify, extract, score, draft, guardrails</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-core">
+    Single Haiku call for classify + extract, a rule-based (non-LLM) confidence rubric, a Sonnet drafting call, and fixed-priority routing guardrails (sensitive topic, retention risk, contradiction, confidence floor). Full definitions and the literal prompt text are in <strong>HOW_THE_AI_WORKS.md</strong>.
+  </div>
+</div>
+
+<div class="card" id="card-brand">
+  <div class="card-summary" onclick="toggle('brand')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Brand guidelines + anti-AI-isms</span>
+        <span class="item-note">Read fresh per draft call</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-brand">
+    Informal stand-in for a live brand-platform connection (Frontify-style). Includes a distinct rule set banning AI-sounding words/phrases ("genuine", "delve", stock empathy lines), separate from ordinary corporate-speak avoidance.
+  </div>
+</div>
+
+<div class="card" id="card-loopin">
+  <div class="card-summary" onclick="toggle('loopin')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Multi-team loop-in</span>
+        <span class="item-note">Single owner kept, others looped in</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-loopin">
+    Distinct from ambiguity handling (category_alternatives/contradictory_signals). Validated on 26/100 messages in the latest run, including 5 purpose-built "multi_team" test cases (msg_116-120).
+  </div>
+</div>
+
+<div class="card" id="card-agent">
+  <div class="card-summary" onclick="toggle('agent')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Agentic investigation</span>
+        <span class="item-note">The only agentic component</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-agent">
+    Model decides for itself which read-only lookup tools (if any) to call on low-confidence messages, bounded to 4 iterations. Everything else in the build is a fixed-order workflow; this is the exception. Ran on 41/100 messages in the latest run.
+  </div>
+</div>
+
+<div class="card" id="card-channel">
+  <div class="card-summary" onclick="toggle('channel')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Entry-channel modeling</span>
+        <span class="item-note">Support/Sales as a prior, not a rule</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-channel">
+    7 deliberate override cases authored across the set. Result: 6/7 correctly classified by content despite the "wrong" channel; the 7th correctly escalated to Team Lead Triage rather than guessed.
+  </div>
+</div>
+
+<div class="card" id="card-triage">
+  <div class="card-summary" onclick="toggle('triage')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Team Lead Triage queue</span>
+        <span class="item-note">4th queue, data-derived floor</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-triage">
+    Confidence &lt;= 20/100 routes to manual assignment instead of a guessed category. Sensitive-topic and retention-risk overrides stay unconditional ahead of it. 14/100 messages routed here in the latest run.
+  </div>
+</div>
+
+<div class="card" id="card-opus">
+  <div class="card-summary" onclick="toggle('opus')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Opus 4.8 vs Haiku 4.5 comparison</span>
+        <span class="item-note">Real API test, not simulated</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-opus">
+    Ran on the 25 dev-split edge-case messages (held-out excluded, by design). Result: 100% agreement with Haiku, identical accuracy, ~7x the cost. Clean negative result for the Loom - no accuracy case for a stronger classify model.
+  </div>
+</div>
+
+<div class="card" id="card-data">
+  <div class="card-summary" onclick="toggle('data')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Sample set expansion</span>
+        <span class="item-note">80/20 &rarr; 100/20 (120 total)</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-data">
+    20 new dev messages added (msg_101-120): 15 clear Service/Success/Sales examples plus 5 purpose-built multi-team edge cases. Existing 80 dev + 20 held-out left untouched. Held-out set still correctly unrun.
+  </div>
+</div>
+
+<div class="card" id="card-fp">
+  <div class="card-summary" onclick="toggle('fp')">
+    <div class="icon" style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">&#8635;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">False-positive investigation</span>
+        <span class="item-note">Iterative, not one-and-done</span>
+        <div class="header-right"><span class="badge" style="--col:#fbbf24;--bg:rgba(251,191,36,0.12);--bdr:#7c2d12">Ongoing</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-fp">
+    Most recent: msg_017 ("returned to sender - customs paperwork mismatch") misread as a customs seizure. Root cause identified, prompt tightened to distinguish an active hold from a completed return, regression-tested against all 8 true positives - fixed with no recall loss. This class of check runs every time a false positive surfaces, not just once.
+  </div>
+</div>
+
+</div>
+
+<div class="divider">Supporting materials</div>
+<div class="pipeline">
+
+<div class="card" id="card-readme">
+  <div class="card-summary" onclick="toggle('readme')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">README.md</span>
+        <span class="item-note">Repo front page</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-readme">
+    Added once the repo went public - what the repo is, results at a glance, how to run it, repo structure, data/security notes. The first thing an evaluator sees when they click the repo link, rather than a bare file listing.
+  </div>
+</div>
+
+<div class="card" id="card-dash">
+  <div class="card-summary" onclick="toggle('dash')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Results dashboard</span>
+        <span class="item-note">Dark, card-based, filterable, expandable</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-dash">
+    Rebuilt 5 July to match this file's visual style - every message's full extraction, confidence rubric, routing, draft, and investigation trace is now inspectable per row, not just a truncated snippet.
+  </div>
+</div>
+
+<div class="card" id="card-ref">
+  <div class="card-summary" onclick="toggle('ref')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Pipeline &amp; prompts reference</span>
+        <span class="item-note">HOW_THE_AI_WORKS.md</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-ref">
+    Full glossary of every pipeline stage plus the literal, unabridged text of all 3 real prompts in the system. Answers "how many prompts built this" precisely: 3 product prompts + the build plan doc as a distinct meta-level artifact.
+  </div>
+</div>
+
+<div class="card" id="card-appendix">
+  <div class="card-summary" onclick="toggle('appendix')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Word doc code appendix</span>
+        <span class="item-note">For "runs end to end" evaluation</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-appendix">
+    See <strong>Example Co. AI - Code Appendix.docx</strong>, generated directly from the real source files via <strong>build_code_appendix.py</strong> (config, pipeline, batch runner, dashboard, Opus comparison, preview server, both data JSON files) plus setup/run instructions - never retyped by hand, so it cannot drift from the real code.
+  </div>
+</div>
+
+<div class="card" id="card-repo">
+  <div class="card-summary" onclick="toggle('repo')">
+    <div class="icon" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">&#10003;</div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="item-name">Published repo link</span>
+        <span class="item-note">github.com/dan-nackasha-keyworth/ExampleCo-AI-test</span>
+        <div class="header-right"><span class="badge" style="--col:#34d399;--bg:rgba(52,211,153,0.12);--bdr:#065f46">Done</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail" id="detail-repo">
+    Public repo, pushed 6 July. Dan created the empty repo himself and authenticated the push directly through GitHub's own sign-in flow - no credentials were ever handled by Claude Code.
+  </div>
+</div>
+
+</div>
+
+<div class="divider">Run history (dev set - held-out reserved for the final pass)</div>
+<table class="runs">
+  <tr><th>Run</th><th>Messages</th><th>Accuracy</th><th>Cost</th><th>Notes</th></tr>
+  <tr>
+    <td>run_20260704T222727Z</td><td class="num">80</td><td class="num">93.75%</td><td class="num">$0.417</td>
+    <td>First validated run. Sensitive-topic false-positive fix confirmed (9 &rarr; 0).</td>
+  </tr>
+  <tr>
+    <td>run_20260705T195536Z</td><td class="num">80</td><td class="num">93.75%</td><td class="num">$0.755</td>
+    <td>Brand guidelines, loop-in, agentic investigation, entry-channel, Team Lead Triage combined for the first time.</td>
+  </tr>
+  <tr>
+    <td>run_20260706T101059Z</td><td class="num">100</td><td class="num">94.0%</td><td class="num">$0.994</td>
+    <td>Both msg_017 (customs-seizure) and msg_085 (retention-risk) false positives fixed and regression-tested; 0 sensitive-topic FPs, only the 2 known-legitimate retention catches remain. All 6 misses on deliberately-ambiguous edge cases, all self-flagged low confidence.</td>
+  </tr>
+  <tr>
+    <td>run_20260705T212000Z</td><td class="num">100</td><td class="num">95.0%</td><td class="num">$0.961</td>
+    <td>Fresh rebuild: 20 new dev messages incl. 5 multi-team test cases. msg_017 false positive found here (fixed after).</td>
+  </tr>
+  <tr>
+    <td>run_20260706T155809Z</td><td class="num">100</td><td class="num">94.0%</td><td class="num">$1.028</td>
+    <td><strong>Current reference run.</strong> Company/data fully genericized (Example Co.); classify_extract switched to temperature=0 for reproducibility after a false negative on msg_085 reproduced inconsistently at default temperature; a worked-example contrast fixed msg_085 for good. 0 sensitive-topic FPs. 3 retention-risk flags beyond narrow ground truth (msg_087, msg_096, msg_098) - each individually defensible, flagged here as an open question for the retention-risk definition rather than silently accepted. Latency measured: median 7.8s, p95 11.7s, max 37.8s.</td>
+  </tr>
+  <tr>
+    <td>run_20260706T162440Z</td><td class="num">15</td><td class="num">100%</td><td class="num">$0.139</td>
+    <td>New "success_mailbox" split - a fictional, unstructured Success-channel mailbox deliberately mixing Service/Success/Sales content, testing whether the entry-channel prior biases classification toward "Success". 15/15 correct, confirming it doesn't. See <strong>results/success_mailbox_run.html</strong>.</td>
+  </tr>
+</table>
+<div class="held-out-note">The 20-message held-out set has not been run. By design - reserved for one single validation pass near the very end, so prompt iteration is never tuned against it.</div>
+
+<script>
+  function toggle(id) {
+    var panel = document.getElementById('detail-' + id);
+    panel.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

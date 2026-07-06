@@ -1,0 +1,1023 @@
+{
+  "stats": {
+    "n_total": 15,
+    "n_scored": 15,
+    "n_failed": 0,
+    "overall_accuracy": 1.0,
+    "confusion_matrix": {
+      "Service": {
+        "Service": 5,
+        "Success": 0,
+        "Sales": 0
+      },
+      "Success": {
+        "Service": 0,
+        "Success": 5,
+        "Sales": 0
+      },
+      "Sales": {
+        "Service": 0,
+        "Success": 0,
+        "Sales": 5
+      }
+    },
+    "per_category": {
+      "Service": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 5
+      },
+      "Success": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 5
+      },
+      "Sales": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 5
+      }
+    },
+    "confidence_band_counts": {
+      "high": 0,
+      "medium": 10,
+      "low": 5
+    },
+    "sensitive_topic_detection": {
+      "expected": 1,
+      "caught": 1,
+      "total_flagged": 1,
+      "false_positives": 0
+    },
+    "retention_risk_detection": {
+      "expected": 0,
+      "caught": 0,
+      "total_flagged": 0,
+      "false_positives": 0
+    },
+    "total_cost_usd": 0.139086,
+    "latency_seconds": {
+      "min": 4.69,
+      "median": 5.88,
+      "p95": 10.26,
+      "max": 10.26,
+      "median_when_investigated": 8.3,
+      "max_when_investigated": 8.58
+    }
+  },
+  "results": [
+    {
+      "id": "mailbox_001",
+      "text": "Our shipment to Berlin has been sitting with no tracking movement for over a week - can someone check what's happening with it?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Service",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "stuck shipment tracking",
+        "sentiment": "negative",
+        "urgency": "high",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "tracking",
+          "shipment"
+        ],
+        "message_length_words": 20,
+        "reasoning": "This is a straightforward support request about a shipment with no tracking movement\u2014a logistics/delivery issue requiring investigation. The customer is frustrated but not expressing intent to leave or cancel, and there are no sensitive topics involved."
+      },
+      "confidence": {
+        "score": 35,
+        "band": "low",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously",
+          "-30 no reference where category normally expects one"
+        ]
+      },
+      "queue": "Service",
+      "loop_in": [],
+      "guardrail_flags": [
+        "low_confidence_human_review"
+      ],
+      "review_priority": "urgent",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Berlin shipment - need your order number\n\nA week of no tracking movement would worry us too, especially with a shipment already in transit. To look into this for you, we need your order number or account reference. Send that over and we'll get an update on where things stand.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": true,
+      "investigation_summary": "The message doesn't contain any order or shipment reference number \u2014 just a description of a shipment to Berlin with no tracking movement. Since both tools require an actual reference to look up, and none was provided or extractable, I won't call them (guessing a reference would risk pulling up the wrong shipment).\n\n**Note for reviewer:** No order/account reference was found in this message, so I could not perform any lookups. Before this can be triaged further, we need to ask the customer for their order/shipment reference number (e.g., order confirmation ID) so we can check tracking status and account context.",
+      "usage": [
+        {
+          "input_tokens": 2537,
+          "output_tokens": 156,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 732,
+          "output_tokens": 96,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "input_tokens": 909,
+          "output_tokens": 180,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 8.506,
+      "ground_truth_category": "Service",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.012380000000000002
+    },
+    {
+      "id": "mailbox_002",
+      "text": "The customs paperwork generated for our latest order lists the wrong country of origin - how do we get this corrected before it ships?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Service",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "incorrect customs paperwork",
+        "sentiment": "neutral",
+        "urgency": "high",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "customs"
+        ],
+        "message_length_words": 22,
+        "reasoning": "This is a straightforward logistics/compliance support issue about correcting customs documentation before shipment. The customer is reporting a data error in generated paperwork and asking how to fix it - a classic Service category request with no sales, renewal, or expansion intent."
+      },
+      "confidence": {
+        "score": 35,
+        "band": "low",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously",
+          "-30 no reference where category normally expects one"
+        ]
+      },
+      "queue": "Service",
+      "loop_in": [],
+      "guardrail_flags": [
+        "low_confidence_human_review"
+      ],
+      "review_priority": "urgent",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Incorrect country of origin on customs paperwork\n\nWrong country of origin on customs paperwork can hold up an entire shipment, so let's get this fixed before it leaves the warehouse. To pull up the right documents, we need the order number or account reference tied to this shipment.\n\nSend that over and we'll get the correction underway right away.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": true,
+      "investigation_summary": "The message doesn't contain an actual order or account reference \u2014 just a general description of \"our latest order\" \u2014 so I won't call the lookup tools, since doing so would require guessing or inventing a reference ID.\n\n**Note for reviewer:** No order/account reference was provided in this message, so I could not look up shipment or account details. To proceed, please ask the customer for their specific order reference (e.g., ORD-XXXXX) so the customs paperwork and shipment status can be verified before it ships.",
+      "usage": [
+        {
+          "input_tokens": 2538,
+          "output_tokens": 159,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 732,
+          "output_tokens": 128,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "input_tokens": 909,
+          "output_tokens": 154,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 7.721,
+      "ground_truth_category": "Service",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.012485999999999999
+    },
+    {
+      "id": "mailbox_003",
+      "text": "We were billed for a package that never actually left the warehouse - can you look into this and get it refunded?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Service",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "billing error - unshipped package",
+        "sentiment": "negative",
+        "urgency": "high",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [
+          "refund"
+        ],
+        "matched_keywords": [
+          "refund",
+          "billing"
+        ],
+        "message_length_words": 17,
+        "reasoning": "This is a support/billing issue: the customer reports being charged for a shipment that never shipped and is requesting a refund. The refund request and billing error are core Service concerns, not a renewal, expansion, or sales inquiry."
+      },
+      "confidence": {
+        "score": 35,
+        "band": "low",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously",
+          "-30 no reference where category normally expects one"
+        ]
+      },
+      "queue": "Service",
+      "loop_in": [],
+      "guardrail_flags": [
+        "sensitive_topic_always_service",
+        "low_confidence_human_review"
+      ],
+      "review_priority": "urgent",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Billing for undelivered package\n\nGetting charged for something that never shipped is frustrating, and we want to get this fixed. To look into what happened, can you send us the order number or the account email tied to the charge?\n\nOnce we have that, we'll dig in and follow up with next steps.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": true,
+      "investigation_summary": "There's no order or account reference in this message, so I don't have anything to look up \u2014 calling either tool would mean guessing at a reference, which I won't do.\n\n**Note for reviewer:** Customer claims they were billed for a package that never shipped and wants a refund, but no order/account reference was provided or extracted from the message. Before this can be investigated, we need to ask the customer for their order number or account details so we can verify the billing and shipment status.",
+      "usage": [
+        {
+          "input_tokens": 2536,
+          "output_tokens": 166,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 724,
+          "output_tokens": 107,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "input_tokens": 901,
+          "output_tokens": 138,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 7.56,
+      "ground_truth_category": "Service",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": true,
+      "expected_retention_risk_override": false,
+      "cost": 0.011916
+    },
+    {
+      "id": "mailbox_004",
+      "text": "I can't get a label to print for one of our international orders - it just spins and times out every time I try.",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Service",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "label printing timeout",
+        "sentiment": "negative",
+        "urgency": "high",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "label",
+          "order"
+        ],
+        "message_length_words": 24,
+        "reasoning": "This is a straightforward technical support issue: the customer cannot generate a shipping label due to a system timeout. The problem is blocking their workflow for an international shipment, making it urgent, but there is no expansion intent, retention risk, or sales inquiry."
+      },
+      "confidence": {
+        "score": 35,
+        "band": "low",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously",
+          "-30 no reference where category normally expects one"
+        ]
+      },
+      "queue": "Service",
+      "loop_in": [],
+      "guardrail_flags": [
+        "low_confidence_human_review"
+      ],
+      "review_priority": "urgent",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Label won't print for international order\n\nA shipping label that won't generate and just times out is a frustrating thing to hit, especially with an international order waiting to go out. To look into this, we'll need the order number (or the account and destination country) tied to the label that's failing.\n\nOnce we have that, we can dig into what's causing the timeout and get you a working label.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": true,
+      "investigation_summary": "The message doesn't contain any order or account reference, so there's nothing to look up \u2014 calling either tool would require guessing at an ID, which I won't do.\n\n**Note for reviewer:** No order/account reference was provided in this message, so no tool lookups were performed. This appears to be a technical issue (label printing timeout) rather than a shipment status question; recommend asking the customer for the specific order reference before proceeding, or routing to technical/print-service support if this is a recurring platform issue.",
+      "usage": [
+        {
+          "input_tokens": 2538,
+          "output_tokens": 161,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 722,
+          "output_tokens": 128,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "input_tokens": 899,
+          "output_tokens": 155,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 8.3,
+      "ground_truth_category": "Service",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.012451
+    },
+    {
+      "id": "mailbox_005",
+      "text": "One of our customers says their parcel arrived damaged and wants a replacement sent out - what's the process on our end for that?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Service",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "damaged parcel replacement",
+        "sentiment": "neutral",
+        "urgency": "medium",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "parcel",
+          "shipment"
+        ],
+        "message_length_words": 20,
+        "reasoning": "This is an internal question about support process for a damaged shipment claim, not a customer message itself. It describes a Service issue (damaged goods requiring replacement/refund handling) but is framed as a staff inquiry about procedure rather than a customer complaint. Classified as Service because the underlying issue is a logistics/support problem."
+      },
+      "confidence": {
+        "score": 35,
+        "band": "low",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously",
+          "-30 no reference where category normally expects one"
+        ]
+      },
+      "queue": "Service",
+      "loop_in": [],
+      "guardrail_flags": [
+        "low_confidence_human_review"
+      ],
+      "review_priority": "urgent",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: A quick detail before we send a replacement\n\nA damaged parcel is a frustrating start, and we want to get a replacement moving quickly. To pull up the order and process it, can you send over the order number or the account email it was placed under?\n\nOnce we have that, we'll take it from there.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": true,
+      "investigation_summary": "This message contains no order or account reference at all \u2014 it's a general policy/process question (\"what's the process for handling damaged parcel replacements?\"), not a request tied to a specific shipment. Since there's no reference to look up, calling either tool would mean guessing at an identifier, which I won't do.\n\n**Note for reviewer:** No order/account reference was provided in this message, so no lookups were performed. This appears to be a general process question about handling damaged-parcel replacement requests rather than a specific case \u2014 recommend routing to whoever owns the damaged-goods/replacement policy documentation, or asking the agent to get the actual order reference from the customer if this is in fact tied to a real shipment.",
+      "usage": [
+        {
+          "input_tokens": 2538,
+          "output_tokens": 163,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 731,
+          "output_tokens": 104,
+          "model": "claude-sonnet-5"
+        },
+        {
+          "input_tokens": 908,
+          "output_tokens": 218,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 8.579,
+      "ground_truth_category": "Service",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.0131
+    },
+    {
+      "id": "mailbox_006",
+      "text": "We'd like to schedule our quarterly business review to walk through performance from the last few months.",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Success",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "quarterly business review request",
+        "sentiment": "positive",
+        "urgency": "medium",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "qbr"
+        ],
+        "message_length_words": 18,
+        "reasoning": "This is a clear Success message: the customer is an existing account holder requesting a quarterly business review (QBR) to discuss performance metrics. This is a standard Success engagement activity, not a support issue or sales inquiry."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Success",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: re: quarterly business review\n\nHi [Name],\n\nGood timing, we've got your last few months of data ready to review. Let us know a few dates and times that work on your end, and we'll get the QBR on the calendar and send over a summary of what we'll cover.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2530,
+          "output_tokens": 154,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 721,
+          "output_tokens": 99,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 4.726,
+      "ground_truth_category": "Success",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.006948
+    },
+    {
+      "id": "mailbox_007",
+      "text": "Now that we've onboarded two more brands onto the platform, could we get some time to talk through how our account is structured?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Success",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "account structure review",
+        "sentiment": "positive",
+        "urgency": "medium",
+        "expansion_intent_language": true,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "onboarding",
+          "expand",
+          "account"
+        ],
+        "message_length_words": 24,
+        "reasoning": "The customer has recently expanded their usage (onboarded two more brands) and is now requesting a business review conversation about account structure. This is a classic Success motion\u2014growth followed by a request to align on how the account should be organized to support that growth."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Success",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": {
+        "flag": "possible_expansion_signal",
+        "note": "Message contains expansion-intent language. This is a text-only signal derived from this single message, not a verified account health score - treat as a prompt to look closer, not a conclusion."
+      },
+      "draft": "Subject: Re: Account structure review\n\nHi there,\n\nAdding two more brands is a great reason to take a fresh look at how your account is set up. We want to make sure the structure still makes sense for how you're working now, not just how things looked at launch.\n\nSend over a few times that work this week or next, and we'll set up a call with someone from your Success team to walk through it together.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2539,
+          "output_tokens": 167,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 726,
+          "output_tokens": 129,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 5.881,
+      "ground_truth_category": "Success",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.007487
+    },
+    {
+      "id": "mailbox_008",
+      "text": "Our renewal date is coming up soon - could we set up a call to talk through how things have gone before that happens?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Success",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "renewal discussion request",
+        "sentiment": "positive",
+        "urgency": "medium",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "renewal"
+        ],
+        "message_length_words": 24,
+        "reasoning": "This is a clear renewal discussion request from an existing customer wanting to review their account before renewal - a textbook Success category message. The customer is proactively seeking a business review call, which is Success engagement language."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Success",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Renewal call\n\nHi [Name],\n\nGood timing. Talking through how things have gone before you renew is exactly the kind of conversation worth having, so let's get it on the calendar.\n\nHere's a link to book a time that works for you: [scheduling link]. If you'd rather we pick a time, let us know a few windows that suit you and we'll send an invite.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2536,
+          "output_tokens": 150,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 727,
+          "output_tokens": 135,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 5.08,
+      "ground_truth_category": "Success",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.0074919999999999995
+    },
+    {
+      "id": "mailbox_009",
+      "text": "We're planning to expand into three new markets next quarter and want to understand how that affects our setup with you.",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Success",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "expansion planning discussion",
+        "sentiment": "positive",
+        "urgency": "medium",
+        "expansion_intent_language": true,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "expand",
+          "expansion"
+        ],
+        "message_length_words": 24,
+        "reasoning": "This is a Success message: the customer is an existing account holder discussing business growth (expanding into new markets) and seeking a business review or account adjustment discussion. The language directly matches Success category keywords and intent."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Success",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": {
+        "flag": "possible_expansion_signal",
+        "note": "Message contains expansion-intent language. This is a text-only signal derived from this single message, not a verified account health score - treat as a prompt to look closer, not a conclusion."
+      },
+      "draft": "Subject: Re: Expanding into new markets next quarter\n\nHi [Name],\n\nThat's great news, and it's smart to loop us in early. Expansion into new markets can affect things like localization, data residency, and account structure on our end, so we'd like to walk through the details with you.\n\nCould you share which three markets you're targeting? Once we know that, we'll set up a call with the right people on our side to map out what needs to change and by when.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2534,
+          "output_tokens": 151,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 726,
+          "output_tokens": 149,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 5.478,
+      "ground_truth_category": "Success",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.007702
+    },
+    {
+      "id": "mailbox_010",
+      "text": "Could someone walk us through the usage reporting features again? We want to make sure we're getting full value out of the account.",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Success",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "usage reporting feature review",
+        "sentiment": "neutral",
+        "urgency": "low",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "account health"
+        ],
+        "message_length_words": 24,
+        "reasoning": "This is a Success message: an existing customer asking for a walkthrough of platform features to ensure they're maximizing value from their account. This is a classic account health / optimization conversation, not a support issue or sales inquiry."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Success",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Usage reporting walkthrough\n\nHi [Name],\n\nGood question to revisit. Making sure you're getting full value from the account is exactly what these sessions are for.\n\nWe'd like to set up a short call to walk through the usage reporting features, including the dashboards, export options, and any custom views that fit how your team works. Could you share a couple of times that work this week or next? We'll build the walkthrough around what matters most to you.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2537,
+          "output_tokens": 154,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 729,
+          "output_tokens": 155,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 5.489,
+      "ground_truth_category": "Success",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.007819
+    },
+    {
+      "id": "mailbox_011",
+      "text": "We're a new business looking at shipping platforms - could someone send over your pricing tiers and what's included at each level?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Sales",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "pricing inquiry",
+        "sentiment": "neutral",
+        "urgency": "medium",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "pricing",
+          "plan"
+        ],
+        "message_length_words": 22,
+        "reasoning": "This is a prospect (new business) explicitly requesting pricing tiers and plan details, which is a classic Sales inquiry. No existing customer relationship, no service issue, and no expansion/renewal language."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Sales",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Pricing tiers for Example Co.\n\nHi there,\n\nThanks for considering Example Co. as you get your shipping set up. We have three tiers: Starter (up to 100 shipments/month, core carrier integrations, email support), Growth (up to 1,000 shipments/month, rate shopping, batch label printing, and chat support), and Scale (unlimited shipments, API access, dedicated account manager). We'll follow up shortly with a detailed breakdown and current rates for each.\n\nIn the meantime, let us know roughly how many shipments you expect to send monthly. That'll help us point you toward the right fit from the start.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2537,
+          "output_tokens": 148,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 730,
+          "output_tokens": 221,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 10.261,
+      "ground_truth_category": "Sales",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.008782000000000002
+    },
+    {
+      "id": "mailbox_012",
+      "text": "Is there a trial period available before we'd need to commit to a paid plan?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Sales",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "Trial availability inquiry",
+        "sentiment": "neutral",
+        "urgency": "low",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "trial"
+        ],
+        "message_length_words": 13,
+        "reasoning": "This is a prospect or new customer asking about trial availability and plan commitment terms before signing up, which is a direct Sales inquiry about pricing and plan options."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Sales",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Trial period question\n\nHi there,\n\nYes, we offer a 14-day free trial with full access to all features, no credit card required to start. You can sign up directly from our website and explore everything before deciding on a plan. Let us know if you'd like a quick walkthrough once you're in.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2528,
+          "output_tokens": 137,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 720,
+          "output_tokens": 110,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 4.837,
+      "ground_truth_category": "Sales",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.007023
+    },
+    {
+      "id": "mailbox_013",
+      "text": "What would it cost to add international shipping support on top of our current setup?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Sales",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "pricing inquiry for feature addition",
+        "sentiment": "neutral",
+        "urgency": "low",
+        "expansion_intent_language": true,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "pricing",
+          "expand"
+        ],
+        "message_length_words": 13,
+        "reasoning": "The customer is asking about pricing for adding a new capability (international shipping support) to their existing setup. This is a Sales inquiry about plan/feature pricing, combined with expansion intent language. The mention of 'current setup' indicates they are already a customer, but the question is fundamentally about what it would cost to add something new, which is a pricing/plan question typical of Sales."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Sales",
+      "loop_in": [
+        "Success"
+      ],
+      "guardrail_flags": [
+        "looped_in:Success"
+      ],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": {
+        "flag": "possible_expansion_signal",
+        "note": "Message contains expansion-intent language. This is a text-only signal derived from this single message, not a verified account health score - treat as a prompt to look closer, not a conclusion."
+      },
+      "draft": "Subject: Re: International shipping pricing\n\nHi [Name],\n\nThanks for asking about adding international shipping to your setup. Pricing depends on which regions you'd like to cover and whether you need customs/duties calculated at checkout, so a quick call or a bit more detail would help us put together an accurate quote.\n\nLet us know which countries you're targeting and we'll get numbers back to you quickly.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2527,
+          "output_tokens": 191,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 720,
+          "output_tokens": 144,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 5.631,
+      "ground_truth_category": "Sales",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.007802
+    },
+    {
+      "id": "mailbox_014",
+      "text": "We're comparing a few different providers before making a decision - can you outline what makes your platform different from the others?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Sales",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "platform comparison inquiry",
+        "sentiment": "neutral",
+        "urgency": "medium",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "compare",
+          "comparison"
+        ],
+        "message_length_words": 20,
+        "reasoning": "This is a prospect or early-stage prospect asking for a platform comparison and differentiation pitch, which is a classic Sales inquiry. The language 'comparing providers' and 'making a decision' indicates they are evaluating options and seeking to understand the value proposition."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Sales",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: What sets us apart\n\nThanks for giving us a shot at earning your business, comparing options carefully is the right move for a decision like this.\n\nHere's what tends to stand out to customers who've evaluated other platforms alongside ours: faster implementation (most teams are up and running in under two weeks), a support team that responds in hours rather than days, and pricing that stays flat as you scale rather than jumping at usage tiers. We also don't lock core features behind higher-priced plans, so what you sign up for is what you get.\n\nIf you can share which providers you're weighing us against, we can point you to the specific differences that'll matter most for your use case.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2535,
+          "output_tokens": 163,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 728,
+          "output_tokens": 218,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 7.538,
+      "ground_truth_category": "Sales",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.008804
+    },
+    {
+      "id": "mailbox_015",
+      "text": "Looking to sign up for the first time - is there a setup fee on top of the monthly cost?",
+      "entry_channel": "Success",
+      "extraction": {
+        "category": "Sales",
+        "category_alternatives": [],
+        "contradictory_signals": false,
+        "account_or_order_reference": "",
+        "issue_type": "Setup fee pricing inquiry",
+        "sentiment": "neutral",
+        "urgency": "low",
+        "expansion_intent_language": false,
+        "retention_risk_language": false,
+        "sensitive_topic_flags": [],
+        "matched_keywords": [
+          "setup fee",
+          "pricing",
+          "sign up"
+        ],
+        "message_length_words": 13,
+        "reasoning": "This is a prospect asking about pricing and setup fees before signing up, which is a clear Sales inquiry. No service issues, no existing customer context, and no expansion language."
+      },
+      "confidence": {
+        "score": 65,
+        "band": "medium",
+        "reasons": [
+          "+35 single fitting category, no hedging",
+          "+15 category-specific terminology matched",
+          "+15 sentiment/urgency stated unambiguously"
+        ]
+      },
+      "queue": "Sales",
+      "loop_in": [],
+      "guardrail_flags": [],
+      "review_priority": "standard",
+      "requires_human_review": true,
+      "health_expansion_flag": null,
+      "draft": "Subject: Re: Setup fee question\n\nHi there,\n\nGood news: there's no setup fee. You'll only pay the monthly subscription cost, and you can get started as soon as you're ready.\n\nLet us know if you'd like help picking the right plan.\n\nBest,\nThe Example Co. Team",
+      "draft_is_clarification_request": false,
+      "investigation_summary": null,
+      "usage": [
+        {
+          "input_tokens": 2532,
+          "output_tokens": 150,
+          "model": "claude-haiku-4-5"
+        },
+        {
+          "input_tokens": 729,
+          "output_tokens": 95,
+          "model": "claude-sonnet-5"
+        }
+      ],
+      "latency_seconds": 4.694,
+      "ground_truth_category": "Sales",
+      "split": "success_mailbox",
+      "edge_case_type": "messy_mailbox",
+      "expected_sensitive_topic": false,
+      "expected_retention_risk_override": false,
+      "cost": 0.006894
+    }
+  ]
+}

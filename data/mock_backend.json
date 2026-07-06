@@ -1,0 +1,46 @@
+{
+  "_note": "SYNTHETIC TEST DATA ONLY - stands in for what would, in a real deployment, be live calls to Example Co.'s own MCP server (tracking/rates/duty/label tools, already shipped) plus their CRM/billing system for account context. See the build plan's 'Test system vs. real system' table for the full mapping.",
+  "orders": {
+    "ORD-88213": {
+      "status": "in_transit",
+      "last_scan": "9 days ago",
+      "carrier": "DHL",
+      "destination_country": "Germany",
+      "note": "Tracking has not updated since the last scan - matches the customer's complaint."
+    },
+    "ORD-50219": {
+      "status": "held_in_customs",
+      "last_scan": "14 days ago",
+      "carrier": "FedEx",
+      "destination_country": "France",
+      "note": "Customs hold, reason code pending - no commercial invoice on file for this shipment."
+    },
+    "ORD-60771": {
+      "status": "delivered",
+      "last_scan": "3 days ago",
+      "carrier": "UPS",
+      "destination_country": "United States",
+      "note": "Delivered at correct weight; billed weight on file is higher than the shipped weight - matches the customer's overcharge claim."
+    }
+  },
+  "accounts": {
+    "ORD-88213": {
+      "plan_tier": "Plus",
+      "account_age_months": 14,
+      "prior_tickets_last_90_days": 1,
+      "arr_band": "under_5k"
+    },
+    "ORD-50219": {
+      "plan_tier": "Scale",
+      "account_age_months": 31,
+      "prior_tickets_last_90_days": 4,
+      "arr_band": "5k_to_25k"
+    },
+    "ORD-60771": {
+      "plan_tier": "Premier",
+      "account_age_months": 8,
+      "prior_tickets_last_90_days": 0,
+      "arr_band": "under_5k"
+    }
+  }
+}

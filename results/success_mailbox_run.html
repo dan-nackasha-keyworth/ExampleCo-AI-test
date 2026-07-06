@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>AI Triage - Routing Results</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; padding: 24px; font-size: 13px; line-height: 1.5; }
+h1 { font-size: 20px; font-weight: 600; color: #f8fafc; margin-bottom: 6px; }
+.subtitle { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+
+.stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.stat { background: #1a1d2e; border: 1px solid #2d3149; border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 96px; flex: 1; }
+.stat .sv { font-size: 18px; font-weight: 700; color: var(--col, #f8fafc); }
+.stat .sl { font-size: 10px; color: #64748b; margin-top: 3px; }
+
+.filter-bar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; padding: 12px 14px; background: #141628; border: 1px solid #2d3149; border-radius: 8px; }
+.filter-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; margin-right: 4px; white-space: nowrap; }
+.fbtn { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid #334155; background: #1a1d2e; color: #475569; transition: all 0.15s; }
+.fbtn.active { background: var(--bg); border-color: var(--bdr); color: var(--col); }
+.fbtn:hover { opacity: 0.85; }
+.row-hint { font-size: 10px; color: #475569; margin-left: auto; white-space: nowrap; }
+
+.divider { margin: 26px 0 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #475569; display: flex; align-items: center; gap: 8px; }
+.divider::after { content: ''; flex: 1; height: 1px; background: #2d3148; }
+
+.pipeline { display: flex; flex-direction: column; gap: 10px; }
+.card { background: #1e2130; border: 1px solid #2d3148; border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
+.card:hover { border-color: #4a5080; }
+.card-summary { padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.avatar { width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; background: var(--bg); color: var(--col); border: 1px solid var(--bdr); }
+.card-body { flex: 1; min-width: 0; }
+.card-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.msg-id { font-family: ui-monospace, monospace; color: #64748b; font-size: 11px; }
+.msg-snip { font-size: 12px; color: #94a3b8; flex: 1; min-width: 160px; }
+.header-right { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
+.badge { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; background: var(--bg); color: var(--col); border: 1px solid var(--bdr); }
+.badge-gray { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid #334155; }
+.badge-mismatch { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid #7f1d1d; }
+.tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin: 1px; background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid #334155; }
+.tag.flag { background: rgba(251,191,36,0.08); color: #fbbf24; border-color: #7c2d12; }
+.gt-line { font-size: 11px; color: #64748b; }
+.gt-line b { color: #cbd5e1; font-weight: 500; }
+
+.detail { display: none; border-top: 1px solid #2d3148; padding: 18px 20px; background: #171924; }
+.detail.open { display: block; }
+.detail h3 { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; margin: 16px 0 8px; }
+.detail h3:first-child { margin-top: 0; }
+.detail p { font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 6px; }
+.dl { display: flex; gap: 8px; font-size: 12px; padding: 3px 0; }
+.dl .k { color: #64748b; min-width: 130px; flex-shrink: 0; }
+.dl .v { color: #cbd5e1; }
+.rubric { font-family: ui-monospace, monospace; font-size: 11px; padding: 2px 0; }
+.rubric.pos { color: #6ee7a0; }
+.rubric.neg { color: #fb923c; }
+.quote { background: #1e2130; border-left: 2px solid #3b82f6; border-radius: 4px; padding: 10px 14px; font-size: 12px; color: #cbd5e1; line-height: 1.6; margin: 4px 0 10px; }
+.quote.agent { border-left-color: #a78bfa; }
+.reasoning { font-style: italic; color: #64748b; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>AI triage - routing results</h1>
+<p class="subtitle">Source: run_20260706T162440Z_success_mailbox.json &middot; click any row to expand full reasoning, draft, and confidence rubric</p>
+
+<div class="stats"><div class="stat"><div class="sv">15/15</div><div class="sl">scored / total</div></div><div class="stat" style="--col:#34d399"><div class="sv">100.0%</div><div class="sl">accuracy</div></div><div class="stat" style="--col:#60a5fa"><div class="sv">$0.139</div><div class="sl">total cost</div></div><div class="stat"><div class="sv">H:0 M:10 L:5</div><div class="sl">confidence bands</div></div><div class="stat" style="--col:#34d399"><div class="sv">1/1</div><div class="sl">sensitive-topic recall</div></div><div class="stat" style="--col:#34d399"><div class="sv">0/1</div><div class="sl">sensitive false positives</div></div><div class="stat" style="--col:#34d399"><div class="sv">0/0</div><div class="sl">retention-risk recall</div></div><div class="stat" style="--col:#fbbf24"><div class="sv">0</div><div class="sl">manager triage</div></div><div class="stat" style="--col:#f87171"><div class="sv">5</div><div class="sl">urgent review</div></div></div>
+
+<div class="filter-bar">
+  <span class="filter-label">Show</span>
+  <button class="fbtn active" data-cat="all" style="--col:#e2e8f0;--bg:#1a1d2e;--bdr:#334155" onclick="toggleFilter(this)">All</button><button class="fbtn active" data-cat="Service" style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a" onclick="toggleFilter(this)">Service</button><button class="fbtn active" data-cat="Success" style="--col:#34d399;--bg:#052e16;--bdr:#065f46" onclick="toggleFilter(this)">Success</button><button class="fbtn active" data-cat="Sales" style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95" onclick="toggleFilter(this)">Sales</button><button class="fbtn active" data-cat="Team Lead Triage" style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12" onclick="toggleFilter(this)">Team Lead triage</button><button class="fbtn" data-cat="urgent" style="--col:#f87171;--bg:#350a0a;--bdr:#991b1b" onclick="toggleFilter(this)">Urgent only</button>
+  <span class="row-hint" id="row-hint"></span>
+</div>
+
+<div class="pipeline" id="pipeline">
+<div class="card" data-queue="Service" data-urgent="1">
+    <div class="card-summary" onclick="toggleCard(0)">
+      <div class="avatar" style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_001</span>
+          <span class="msg-snip">Our shipment to Berlin has been sitting with no tracking movement for over a week - can so...</span>
+          <div class="header-right"><span class="badge " style="--col:#f87171;--bg:#350a0a;--bdr:#991b1b">low (35)</span><span class="badge " style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">Service</span><span class="badge badge-mismatch">urgent</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Service</b> &rarr; predicted <b>Service</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-0">
+      <h3>Full message</h3>
+      <p>Our shipment to Berlin has been sitting with no tracking movement for over a week - can someone check what&#x27;s happening with it?</p>
+      <p class="reasoning">"This is a straightforward support request about a shipment with no tracking movement—a logistics/delivery issue requiring investigation. The customer is frustrated but not expressing intent to leave or cancel, and there are no sensitive topics involved."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">stuck shipment tracking</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">negative / high</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div><div class="rubric neg">-30 no reference where category normally expects one</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">35 / low</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Service</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag flag">low_confidence_human_review</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.012380</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Berlin shipment - need your order number<br><br>A week of no tracking movement would worry us too, especially with a shipment already in transit. To look into this for you, we need your order number or account reference. Send that over and we&#x27;ll get an update on where things stand.<br><br>Best,<br>The Example Co. Team</div>
+      <h3>Agent investigation (agentic - only runs on low confidence)</h3><div class="quote agent">The message doesn&#x27;t contain any order or shipment reference number — just a description of a shipment to Berlin with no tracking movement. Since both tools require an actual reference to look up, and none was provided or extractable, I won&#x27;t call them (guessing a reference would risk pulling up the wrong shipment).
+
+**Note for reviewer:** No order/account reference was found in this message, so I could not perform any lookups. Before this can be triaged further, we need to ask the customer for their order/shipment reference number (e.g., order confirmation ID) so we can check tracking status and account context.</div>
+    </div></div><div class="card" data-queue="Service" data-urgent="1">
+    <div class="card-summary" onclick="toggleCard(1)">
+      <div class="avatar" style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_002</span>
+          <span class="msg-snip">The customs paperwork generated for our latest order lists the wrong country of origin - h...</span>
+          <div class="header-right"><span class="badge " style="--col:#f87171;--bg:#350a0a;--bdr:#991b1b">low (35)</span><span class="badge " style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">Service</span><span class="badge badge-mismatch">urgent</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Service</b> &rarr; predicted <b>Service</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-1">
+      <h3>Full message</h3>
+      <p>The customs paperwork generated for our latest order lists the wrong country of origin - how do we get this corrected before it ships?</p>
+      <p class="reasoning">"This is a straightforward logistics/compliance support issue about correcting customs documentation before shipment. The customer is reporting a data error in generated paperwork and asking how to fix it - a classic Service category request with no sales, renewal, or expansion intent."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">incorrect customs paperwork</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / high</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div><div class="rubric neg">-30 no reference where category normally expects one</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">35 / low</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Service</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag flag">low_confidence_human_review</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.012486</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Incorrect country of origin on customs paperwork<br><br>Wrong country of origin on customs paperwork can hold up an entire shipment, so let&#x27;s get this fixed before it leaves the warehouse. To pull up the right documents, we need the order number or account reference tied to this shipment.<br><br>Send that over and we&#x27;ll get the correction underway right away.<br><br>Best,<br>The Example Co. Team</div>
+      <h3>Agent investigation (agentic - only runs on low confidence)</h3><div class="quote agent">The message doesn&#x27;t contain an actual order or account reference — just a general description of &quot;our latest order&quot; — so I won&#x27;t call the lookup tools, since doing so would require guessing or inventing a reference ID.
+
+**Note for reviewer:** No order/account reference was provided in this message, so I could not look up shipment or account details. To proceed, please ask the customer for their specific order reference (e.g., ORD-XXXXX) so the customs paperwork and shipment status can be verified before it ships.</div>
+    </div></div><div class="card" data-queue="Service" data-urgent="1">
+    <div class="card-summary" onclick="toggleCard(2)">
+      <div class="avatar" style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_003</span>
+          <span class="msg-snip">We were billed for a package that never actually left the warehouse - can you look into th...</span>
+          <div class="header-right"><span class="badge " style="--col:#f87171;--bg:#350a0a;--bdr:#991b1b">low (35)</span><span class="badge " style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">Service</span><span class="badge badge-mismatch">urgent</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Service</b> &rarr; predicted <b>Service</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-2">
+      <h3>Full message</h3>
+      <p>We were billed for a package that never actually left the warehouse - can you look into this and get it refunded?</p>
+      <p class="reasoning">"This is a support/billing issue: the customer reports being charged for a shipment that never shipped and is requesting a refund. The refund request and billing error are core Service concerns, not a renewal, expansion, or sales inquiry."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">billing error - unshipped package</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">negative / high</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">refund</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div><div class="rubric neg">-30 no reference where category normally expects one</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">35 / low</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Service</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag flag">sensitive_topic_always_service</span><span class="tag flag">low_confidence_human_review</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.011916</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Billing for undelivered package<br><br>Getting charged for something that never shipped is frustrating, and we want to get this fixed. To look into what happened, can you send us the order number or the account email tied to the charge?<br><br>Once we have that, we&#x27;ll dig in and follow up with next steps.<br><br>Best,<br>The Example Co. Team</div>
+      <h3>Agent investigation (agentic - only runs on low confidence)</h3><div class="quote agent">There&#x27;s no order or account reference in this message, so I don&#x27;t have anything to look up — calling either tool would mean guessing at a reference, which I won&#x27;t do.
+
+**Note for reviewer:** Customer claims they were billed for a package that never shipped and wants a refund, but no order/account reference was provided or extracted from the message. Before this can be investigated, we need to ask the customer for their order number or account details so we can verify the billing and shipment status.</div>
+    </div></div><div class="card" data-queue="Service" data-urgent="1">
+    <div class="card-summary" onclick="toggleCard(3)">
+      <div class="avatar" style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_004</span>
+          <span class="msg-snip">I can&#x27;t get a label to print for one of our international orders - it just spins and times...</span>
+          <div class="header-right"><span class="badge " style="--col:#f87171;--bg:#350a0a;--bdr:#991b1b">low (35)</span><span class="badge " style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">Service</span><span class="badge badge-mismatch">urgent</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Service</b> &rarr; predicted <b>Service</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-3">
+      <h3>Full message</h3>
+      <p>I can&#x27;t get a label to print for one of our international orders - it just spins and times out every time I try.</p>
+      <p class="reasoning">"This is a straightforward technical support issue: the customer cannot generate a shipping label due to a system timeout. The problem is blocking their workflow for an international shipment, making it urgent, but there is no expansion intent, retention risk, or sales inquiry."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">label printing timeout</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">negative / high</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div><div class="rubric neg">-30 no reference where category normally expects one</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">35 / low</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Service</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag flag">low_confidence_human_review</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.012451</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Label won&#x27;t print for international order<br><br>A shipping label that won&#x27;t generate and just times out is a frustrating thing to hit, especially with an international order waiting to go out. To look into this, we&#x27;ll need the order number (or the account and destination country) tied to the label that&#x27;s failing.<br><br>Once we have that, we can dig into what&#x27;s causing the timeout and get you a working label.<br><br>Best,<br>The Example Co. Team</div>
+      <h3>Agent investigation (agentic - only runs on low confidence)</h3><div class="quote agent">The message doesn&#x27;t contain any order or account reference, so there&#x27;s nothing to look up — calling either tool would require guessing at an ID, which I won&#x27;t do.
+
+**Note for reviewer:** No order/account reference was provided in this message, so no tool lookups were performed. This appears to be a technical issue (label printing timeout) rather than a shipment status question; recommend asking the customer for the specific order reference before proceeding, or routing to technical/print-service support if this is a recurring platform issue.</div>
+    </div></div><div class="card" data-queue="Service" data-urgent="1">
+    <div class="card-summary" onclick="toggleCard(4)">
+      <div class="avatar" style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_005</span>
+          <span class="msg-snip">One of our customers says their parcel arrived damaged and wants a replacement sent out - ...</span>
+          <div class="header-right"><span class="badge " style="--col:#f87171;--bg:#350a0a;--bdr:#991b1b">low (35)</span><span class="badge " style="--col:#60a5fa;--bg:#0b1e3f;--bdr:#1e3a8a">Service</span><span class="badge badge-mismatch">urgent</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Service</b> &rarr; predicted <b>Service</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-4">
+      <h3>Full message</h3>
+      <p>One of our customers says their parcel arrived damaged and wants a replacement sent out - what&#x27;s the process on our end for that?</p>
+      <p class="reasoning">"This is an internal question about support process for a damaged shipment claim, not a customer message itself. It describes a Service issue (damaged goods requiring replacement/refund handling) but is framed as a staff inquiry about procedure rather than a customer complaint. Classified as Service because the underlying issue is a logistics/support problem."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">damaged parcel replacement</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div><div class="rubric neg">-30 no reference where category normally expects one</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">35 / low</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Service</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag flag">low_confidence_human_review</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.013100</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: A quick detail before we send a replacement<br><br>A damaged parcel is a frustrating start, and we want to get a replacement moving quickly. To pull up the order and process it, can you send over the order number or the account email it was placed under?<br><br>Once we have that, we&#x27;ll take it from there.<br><br>Best,<br>The Example Co. Team</div>
+      <h3>Agent investigation (agentic - only runs on low confidence)</h3><div class="quote agent">This message contains no order or account reference at all — it&#x27;s a general policy/process question (&quot;what&#x27;s the process for handling damaged parcel replacements?&quot;), not a request tied to a specific shipment. Since there&#x27;s no reference to look up, calling either tool would mean guessing at an identifier, which I won&#x27;t do.
+
+**Note for reviewer:** No order/account reference was provided in this message, so no lookups were performed. This appears to be a general process question about handling damaged-parcel replacement requests rather than a specific case — recommend routing to whoever owns the damaged-goods/replacement policy documentation, or asking the agent to get the actual order reference from the customer if this is in fact tied to a real shipment.</div>
+    </div></div><div class="card" data-queue="Success" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(5)">
+      <div class="avatar" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_006</span>
+          <span class="msg-snip">We&#x27;d like to schedule our quarterly business review to walk through performance from the l...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#34d399;--bg:#052e16;--bdr:#065f46">Success</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Success</b> &rarr; predicted <b>Success</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-5">
+      <h3>Full message</h3>
+      <p>We&#x27;d like to schedule our quarterly business review to walk through performance from the last few months.</p>
+      <p class="reasoning">"This is a clear Success message: the customer is an existing account holder requesting a quarterly business review (QBR) to discuss performance metrics. This is a standard Success engagement activity, not a support issue or sales inquiry."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">quarterly business review request</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">positive / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Success</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.006948</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: re: quarterly business review<br><br>Hi [Name],<br><br>Good timing, we&#x27;ve got your last few months of data ready to review. Let us know a few dates and times that work on your end, and we&#x27;ll get the QBR on the calendar and send over a summary of what we&#x27;ll cover.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Success" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(6)">
+      <div class="avatar" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_007</span>
+          <span class="msg-snip">Now that we&#x27;ve onboarded two more brands onto the platform, could we get some time to talk...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#34d399;--bg:#052e16;--bdr:#065f46">Success</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Success</b> &rarr; predicted <b>Success</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-6">
+      <h3>Full message</h3>
+      <p>Now that we&#x27;ve onboarded two more brands onto the platform, could we get some time to talk through how our account is structured?</p>
+      <p class="reasoning">"The customer has recently expanded their usage (onboarded two more brands) and is now requesting a business review conversation about account structure. This is a classic Success motion—growth followed by a request to align on how the account should be organized to support that growth."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">account structure review</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">positive / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">True</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Success</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.007487</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Account structure review<br><br>Hi there,<br><br>Adding two more brands is a great reason to take a fresh look at how your account is set up. We want to make sure the structure still makes sense for how you&#x27;re working now, not just how things looked at launch.<br><br>Send over a few times that work this week or next, and we&#x27;ll set up a call with someone from your Success team to walk through it together.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Success" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(7)">
+      <div class="avatar" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_008</span>
+          <span class="msg-snip">Our renewal date is coming up soon - could we set up a call to talk through how things hav...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#34d399;--bg:#052e16;--bdr:#065f46">Success</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Success</b> &rarr; predicted <b>Success</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-7">
+      <h3>Full message</h3>
+      <p>Our renewal date is coming up soon - could we set up a call to talk through how things have gone before that happens?</p>
+      <p class="reasoning">"This is a clear renewal discussion request from an existing customer wanting to review their account before renewal - a textbook Success category message. The customer is proactively seeking a business review call, which is Success engagement language."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">renewal discussion request</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">positive / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Success</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.007492</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Renewal call<br><br>Hi [Name],<br><br>Good timing. Talking through how things have gone before you renew is exactly the kind of conversation worth having, so let&#x27;s get it on the calendar.<br><br>Here&#x27;s a link to book a time that works for you: [scheduling link]. If you&#x27;d rather we pick a time, let us know a few windows that suit you and we&#x27;ll send an invite.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Success" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(8)">
+      <div class="avatar" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_009</span>
+          <span class="msg-snip">We&#x27;re planning to expand into three new markets next quarter and want to understand how th...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#34d399;--bg:#052e16;--bdr:#065f46">Success</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Success</b> &rarr; predicted <b>Success</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-8">
+      <h3>Full message</h3>
+      <p>We&#x27;re planning to expand into three new markets next quarter and want to understand how that affects our setup with you.</p>
+      <p class="reasoning">"This is a Success message: the customer is an existing account holder discussing business growth (expanding into new markets) and seeking a business review or account adjustment discussion. The language directly matches Success category keywords and intent."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">expansion planning discussion</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">positive / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">True</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Success</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.007702</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Expanding into new markets next quarter<br><br>Hi [Name],<br><br>That&#x27;s great news, and it&#x27;s smart to loop us in early. Expansion into new markets can affect things like localization, data residency, and account structure on our end, so we&#x27;d like to walk through the details with you.<br><br>Could you share which three markets you&#x27;re targeting? Once we know that, we&#x27;ll set up a call with the right people on our side to map out what needs to change and by when.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Success" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(9)">
+      <div class="avatar" style="--col:#34d399;--bg:#052e16;--bdr:#065f46">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_010</span>
+          <span class="msg-snip">Could someone walk us through the usage reporting features again? We want to make sure we&#x27;...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#34d399;--bg:#052e16;--bdr:#065f46">Success</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Success</b> &rarr; predicted <b>Success</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-9">
+      <h3>Full message</h3>
+      <p>Could someone walk us through the usage reporting features again? We want to make sure we&#x27;re getting full value out of the account.</p>
+      <p class="reasoning">"This is a Success message: an existing customer asking for a walkthrough of platform features to ensure they&#x27;re maximizing value from their account. This is a classic account health / optimization conversation, not a support issue or sales inquiry."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">usage reporting feature review</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / low</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Success</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.007819</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Usage reporting walkthrough<br><br>Hi [Name],<br><br>Good question to revisit. Making sure you&#x27;re getting full value from the account is exactly what these sessions are for.<br><br>We&#x27;d like to set up a short call to walk through the usage reporting features, including the dashboards, export options, and any custom views that fit how your team works. Could you share a couple of times that work this week or next? We&#x27;ll build the walkthrough around what matters most to you.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Sales" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(10)">
+      <div class="avatar" style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_011</span>
+          <span class="msg-snip">We&#x27;re a new business looking at shipping platforms - could someone send over your pricing ...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">Sales</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Sales</b> &rarr; predicted <b>Sales</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-10">
+      <h3>Full message</h3>
+      <p>We&#x27;re a new business looking at shipping platforms - could someone send over your pricing tiers and what&#x27;s included at each level?</p>
+      <p class="reasoning">"This is a prospect (new business) explicitly requesting pricing tiers and plan details, which is a classic Sales inquiry. No existing customer relationship, no service issue, and no expansion/renewal language."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">pricing inquiry</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Sales</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.008782</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Pricing tiers for Example Co.<br><br>Hi there,<br><br>Thanks for considering Example Co. as you get your shipping set up. We have three tiers: Starter (up to 100 shipments/month, core carrier integrations, email support), Growth (up to 1,000 shipments/month, rate shopping, batch label printing, and chat support), and Scale (unlimited shipments, API access, dedicated account manager). We&#x27;ll follow up shortly with a detailed breakdown and current rates for each.<br><br>In the meantime, let us know roughly how many shipments you expect to send monthly. That&#x27;ll help us point you toward the right fit from the start.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Sales" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(11)">
+      <div class="avatar" style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_012</span>
+          <span class="msg-snip">Is there a trial period available before we&#x27;d need to commit to a paid plan?</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">Sales</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Sales</b> &rarr; predicted <b>Sales</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-11">
+      <h3>Full message</h3>
+      <p>Is there a trial period available before we&#x27;d need to commit to a paid plan?</p>
+      <p class="reasoning">"This is a prospect or new customer asking about trial availability and plan commitment terms before signing up, which is a direct Sales inquiry about pricing and plan options."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">Trial availability inquiry</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / low</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Sales</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.007023</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Trial period question<br><br>Hi there,<br><br>Yes, we offer a 14-day free trial with full access to all features, no credit card required to start. You can sign up directly from our website and explore everything before deciding on a plan. Let us know if you&#x27;d like a quick walkthrough once you&#x27;re in.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Sales" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(12)">
+      <div class="avatar" style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_013</span>
+          <span class="msg-snip">What would it cost to add international shipping support on top of our current setup?</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">Sales</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Sales</b> &rarr; predicted <b>Sales</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-12">
+      <h3>Full message</h3>
+      <p>What would it cost to add international shipping support on top of our current setup?</p>
+      <p class="reasoning">"The customer is asking about pricing for adding a new capability (international shipping support) to their existing setup. This is a Sales inquiry about plan/feature pricing, combined with expansion intent language. The mention of &#x27;current setup&#x27; indicates they are already a customer, but the question is fundamentally about what it would cost to add something new, which is a pricing/plan question typical of Sales."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">pricing inquiry for feature addition</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / low</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">True</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Sales</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">Success</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag flag">looped_in:Success</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.007802</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: International shipping pricing<br><br>Hi [Name],<br><br>Thanks for asking about adding international shipping to your setup. Pricing depends on which regions you&#x27;d like to cover and whether you need customs/duties calculated at checkout, so a quick call or a bit more detail would help us put together an accurate quote.<br><br>Let us know which countries you&#x27;re targeting and we&#x27;ll get numbers back to you quickly.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Sales" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(13)">
+      <div class="avatar" style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_014</span>
+          <span class="msg-snip">We&#x27;re comparing a few different providers before making a decision - can you outline what ...</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">Sales</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Sales</b> &rarr; predicted <b>Sales</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-13">
+      <h3>Full message</h3>
+      <p>We&#x27;re comparing a few different providers before making a decision - can you outline what makes your platform different from the others?</p>
+      <p class="reasoning">"This is a prospect or early-stage prospect asking for a platform comparison and differentiation pitch, which is a classic Sales inquiry. The language &#x27;comparing providers&#x27; and &#x27;making a decision&#x27; indicates they are evaluating options and seeking to understand the value proposition."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">platform comparison inquiry</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / medium</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Sales</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.008804</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: What sets us apart<br><br>Thanks for giving us a shot at earning your business, comparing options carefully is the right move for a decision like this.<br><br>Here&#x27;s what tends to stand out to customers who&#x27;ve evaluated other platforms alongside ours: faster implementation (most teams are up and running in under two weeks), a support team that responds in hours rather than days, and pricing that stays flat as you scale rather than jumping at usage tiers. We also don&#x27;t lock core features behind higher-priced plans, so what you sign up for is what you get.<br><br>If you can share which providers you&#x27;re weighing us against, we can point you to the specific differences that&#x27;ll matter most for your use case.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div><div class="card" data-queue="Sales" data-urgent="0">
+    <div class="card-summary" onclick="toggleCard(14)">
+      <div class="avatar" style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">S</div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="msg-id">mailbox_015</span>
+          <span class="msg-snip">Looking to sign up for the first time - is there a setup fee on top of the monthly cost?</span>
+          <div class="header-right"><span class="badge " style="--col:#fbbf24;--bg:#2a1500;--bdr:#7c2d12">medium (65)</span><span class="badge " style="--col:#c4b5fd;--bg:#1e1533;--bdr:#4c1d95">Sales</span></div>
+        </div>
+        <span class="gt-line">Ground truth <b>Sales</b> &rarr; predicted <b>Sales</b></span>
+        <div style="margin-top:4px"><span class="tag">Success</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail-14">
+      <h3>Full message</h3>
+      <p>Looking to sign up for the first time - is there a setup fee on top of the monthly cost?</p>
+      <p class="reasoning">"This is a prospect asking about pricing and setup fees before signing up, which is a clear Sales inquiry. No service issues, no existing customer context, and no expansion language."</p>
+
+      <h3>Extraction</h3>
+      <div class="dl"><span class="k">Category alternatives</span><span class="v">none</span></div><div class="dl"><span class="k">Contradictory signals</span><span class="v">False</span></div><div class="dl"><span class="k">Account/order reference</span><span class="v">none</span></div><div class="dl"><span class="k">Issue type</span><span class="v">Setup fee pricing inquiry</span></div><div class="dl"><span class="k">Sentiment / urgency</span><span class="v">neutral / low</span></div><div class="dl"><span class="k">Expansion intent</span><span class="v">False</span></div><div class="dl"><span class="k">Retention risk language</span><span class="v">False</span></div><div class="dl"><span class="k">Sensitive topic flags</span><span class="v">none</span></div><div class="dl"><span class="k">Entry channel</span><span class="v">Success</span></div>
+
+      <h3>Confidence rubric</h3>
+      <div class="rubric pos">+35 single fitting category, no hedging</div><div class="rubric pos">+15 category-specific terminology matched</div><div class="rubric pos">+15 sentiment/urgency stated unambiguously</div>
+      <div class="dl" style="margin-top:6px"><span class="k">Final score / band</span><span class="v">65 / medium</span></div>
+
+      <h3>Routing</h3>
+      <div class="dl"><span class="k">Queue</span><span class="v">Sales</span></div>
+      <div class="dl"><span class="k">Looped in</span><span class="v">none</span></div>
+      <div class="dl"><span class="k">Guardrail flags</span><span class="v"><span class="tag">none</span></span></div>
+      <div class="dl"><span class="k">Cost (this message)</span><span class="v">$0.006894</span></div>
+
+      <h3>Draft reply</h3>
+      <div class="quote">Subject: Re: Setup fee question<br><br>Hi there,<br><br>Good news: there&#x27;s no setup fee. You&#x27;ll only pay the monthly subscription cost, and you can get started as soon as you&#x27;re ready.<br><br>Let us know if you&#x27;d like help picking the right plan.<br><br>Best,<br>The Example Co. Team</div>
+      
+    </div></div>
+</div>
+
+<script>
+function toggleCard(idx) {
+  var d = document.getElementById('detail-' + idx);
+  d.classList.toggle('open');
+}
+(function() {
+  var btns = document.querySelectorAll('.fbtn');
+  var queueBtns = document.querySelectorAll('.fbtn[data-cat]:not([data-cat="all"]):not([data-cat="urgent"])');
+  var urgentBtn = document.querySelector('.fbtn[data-cat="urgent"]');
+
+  window.toggleFilter = function(btn) {
+    var cat = btn.dataset.cat;
+    if (cat === 'all') {
+      queueBtns.forEach(function(b) { b.classList.add('active'); });
+      urgentBtn.classList.remove('active');
+    } else {
+      btn.classList.toggle('active');
+    }
+    applyFilters();
+  };
+
+  function applyFilters() {
+    var activeQueues = [];
+    var urgentOnly = false;
+    btns.forEach(function(b) {
+      if (b.classList.contains('active')) {
+        if (b.dataset.cat === 'urgent') urgentOnly = true;
+        else if (b.dataset.cat !== 'all') activeQueues.push(b.dataset.cat);
+      }
+    });
+    var cards = document.querySelectorAll('#pipeline .card');
+    var shown = 0;
+    cards.forEach(function(c) {
+      var matchQueue = activeQueues.length === 0 || activeQueues.indexOf(c.dataset.queue) !== -1;
+      var matchUrgent = !urgentOnly || c.dataset.urgent === '1';
+      var visible = matchQueue && matchUrgent;
+      c.style.display = visible ? '' : 'none';
+      if (visible) shown++;
+    });
+    document.getElementById('row-hint').textContent = shown + ' of ' + cards.length + ' shown';
+  }
+  applyFilters();
+})();
+</script>
+</body>
+</html>

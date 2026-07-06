@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ai-triage-preview",
+      "runtimeExecutable": "C:\\Users\\Dan\\anaconda3\\python.exe",
+      "runtimeArgs": ["preview_server.py"],
+      "port": 8756
+    }
+  ]
+}
