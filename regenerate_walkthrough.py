@@ -19,8 +19,7 @@ import anthropic
 from dotenv import load_dotenv
 
 from config import CONFIG as BASE_CONFIG
-from pipeline import process_message
-from batch_runner import compute_stats
+from batch_runner import run_batch, compute_stats
 
 DEFAULT_IDS = ["msg_002", "msg_042", "msg_083", "msg_120", "msg_118"]
 
@@ -52,15 +51,7 @@ def main():
     by_id = {m["id"]: m for m in all_messages}
     messages = [by_id[i] for i in args.ids]
 
-    results = []
-    for msg in messages:
-        print(f"Running {msg['id']}...")
-        result = process_message(client, msg, config)
-        result["ground_truth_category"] = msg.get("ground_truth_category")
-        result["split"] = msg.get("split")
-        result["expected_sensitive_topic"] = msg.get("sensitive_topic", False)
-        result["expected_retention_risk_override"] = msg.get("retention_risk_override", False)
-        results.append(result)
+    results = run_batch(messages, client, config)
 
     stats = compute_stats(results, config["categories"])
     out_json = base_dir / f"{args.out}.json"
