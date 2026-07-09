@@ -8,7 +8,7 @@ configuration in this public version is the fictional "Example Co."
 build was originally created for are delivered privately and are not
 in this repo.
 
-**Repo link:** https://github.com/dan-nackasha-keyworth/ExampleCo-AI-test
+**Repo link:** https://github.com/ddkeyworth/ExampleCo-AI-test
 
 **Companion document:** `HOW_THE_AI_WORKS.md` (in the same repository)
 gives a plain-English glossary of every pipeline stage and the literal
@@ -1426,7 +1426,7 @@ def compute_stats(results, categories):
 
 def main():
     parser = argparse.ArgumentParser(description="Run the AI message-routing pipeline over sample messages.")
-    parser.add_argument("--split", choices=["dev", "held_out", "fresh_check", "success_mailbox", "routing_fix_check", "all"], default="dev",
+    parser.add_argument("--split", choices=["dev", "held_out", "fresh_check", "success_mailbox", "routing_fix_check", "final_check", "all"], default="dev",
                          help="Which split to run (default: dev). Ignored if --ids is given.")
     parser.add_argument("--ids", nargs="+", help="Specific message IDs to run instead of a full split.")
     args = parser.parse_args()
