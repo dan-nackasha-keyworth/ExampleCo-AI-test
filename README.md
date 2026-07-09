@@ -39,7 +39,7 @@ Most recent full run against the 100-message development set:
 - **Sensitive-topic detection: 7/7 caught, 0 false positives**
   (refunds, GDPR requests, compliance/chargeback disputes - always
   routed to Service, never auto-resolved)
-- **Retention-risk detection: 3/3 caught**, including soft language
+- **Retention-risk (churn-risk) detection: 3/3 caught**, including soft language
   that never says "cancel" - plus 2 messages flagged beyond the
   narrow ground-truth definition (a GDPR deletion request, a
   chargeback threat). Each has a defensible business rationale on
@@ -80,8 +80,8 @@ Most recent full run against the 100-message development set:
 - **Classify + extract** (Haiku 4.5) - one call per message
 - **Confidence scoring** - a transparent, rule-based rubric (not an
   LLM-generated percentage)
-- **Routing + guardrails** - sensitive topics and retention risk always
-  win regardless of confidence; a 4th "Team Lead Triage" queue for
+- **Routing + guardrails** - sensitive topics and retention risk
+  (churn risk) always win regardless of confidence; a 4th "Team Lead Triage" queue for
   messages the system is actually unsure about, rather than a forced
   guess; formal close-account/cancel-shipment requests stay
   Support-owned by default, looping in Success only for large accounts;

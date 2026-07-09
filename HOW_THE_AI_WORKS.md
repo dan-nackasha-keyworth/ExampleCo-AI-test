@@ -31,7 +31,7 @@ one exception, the agentic investigation step, is marked as such.
 
 | Stage | What it means, concretely |
 |---|---|
-| **Classify + Extract** | One Haiku 4.5 API call. Reads the raw message text and returns a single JSON object: which of Service/Success/Sales it best fits, any other categories that are also plausible, whether it's actually contradictory, the order/account reference if any, a short issue-type label, sentiment, urgency, and several boolean/array flags (expansion intent, retention-risk language, sensitive-topic matches, matched keywords). Ground truth is never shown to the model - only the message text and generic instructions. |
+| **Classify + Extract** | One Haiku 4.5 API call. Reads the raw message text and returns a single JSON object: which of Service/Success/Sales it best fits, any other categories that are also plausible, whether it's actually contradictory, the order/account reference if any, a short issue-type label, sentiment, urgency, and several boolean/array flags (expansion intent, retention-risk/churn-risk language, sensitive-topic matches, matched keywords). Ground truth is never shown to the model - only the message text and generic instructions. |
 | **Confidence scoring** | Not an LLM call - pure Python arithmetic over the extraction output (`score_confidence` in `pipeline.py`). An additive/subtractive rubric (see table below) produces a 0-100 score and a high/medium/low band. Deliberately rule-based rather than asking the model "how confident are you 0-100" - every point is independently checkable, not an opaque number the model made up. |
 | **Routing / guardrails** | Pure Python (`determine_queue`). Decides the *queue* (who owns the message) from the extraction + confidence, applying overrides in a fixed priority order (see table below). Includes a deterministic account-size lookup (`is_large_account`) and a regex-based formal-request check (`is_formal_close_cancel`) - both plain Python, no extra API call. |
 | **Multi-team loop-in** | Part of `determine_queue`. When a second team has an independent signal (not just uncertainty about the *same* decision), that team is added to a `loop_in` list rather than taking ownership - a single primary owner is always kept. |
@@ -175,13 +175,14 @@ Reference terminology per category (a hint, not an exhaustive list):
   comparison, sign up, signing up, new customer, setup fee,
   contract terms
 
-retention_risk_language: set this true for explicit close/cancel
-account or shipment requests, phrases like: close account, cancel
-account, cancel my account, cancel a shipment, cancel shipment,
-downgrade, switching to a competitor, leaving example co, and also for
-softer but real language about leaving or switching providers even
-without a formal cancellation request. This exists so retention risk
-routes correctly regardless of how it's phrased.
+retention_risk_language (also referred to as churn risk in this
+write-up): set this true for explicit close/cancel account or
+shipment requests, phrases like: close account, cancel account,
+cancel my account, cancel a shipment, cancel shipment, downgrade,
+switching to a competitor, leaving example co, and also for softer
+but real language about leaving or switching providers even without a
+formal cancellation request. This exists so retention risk routes
+correctly regardless of how it's phrased.
 
 sensitive_topic_flags is a NARROW field. Only use terms from this exact
 list, and only when clearly present: refund, chargeback, compliance,
